@@ -22,6 +22,8 @@ def load_workflows():
 
 def apply_workflow(df, schema_def):
     spark = SparkSession.builder.master("local").appName("Validator").getOrCreate()
+    required_columns = [col_def["name"] for col_def in schema_def]
+    df = df[required_columns]
     sdf = spark.createDataFrame(df.astype(str))
 
     valid_rows = []
@@ -35,16 +37,30 @@ def apply_workflow(df, schema_def):
             col_name = col_def["name"]
             dtype = col_def["type"]
             format = col_def.get("format", "")
+            required = col_def.get("required", True)
+
+            value = new_row.get(col_name, None)
+
+            # Handle required fields
+            if required:
+                if value is None or value == "" or value.lower() == "nan":
+                    valid = False
+                    errors[col_name] = "Required value missing"
+                    continue
+
+            # If optional and empty, skip further validation
+            if not required and (value is None or value == "" or value.lower() == "nan"):
+                continue
 
             try:
-                value = new_row[col_name]
                 if dtype == "Integer":
                     int(value)
                 elif dtype == "Double":
                     float(value)
                 elif dtype == "Date":
                     pd.to_datetime(value, format=format)
-            except:
+                # No special validation needed for String type here
+            except Exception as e:
                 valid = False
                 errors[col_name] = f"Invalid {dtype} or format"
 
@@ -58,3 +74,4 @@ def apply_workflow(df, schema_def):
     invalid_df = pd.DataFrame(invalid_rows)
 
     return valid_df, invalid_df
+
