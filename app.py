@@ -23,6 +23,7 @@ if menu == "Create Workflow":
     for i, col in enumerate(st.session_state.columns):
         col["name"] = st.text_input(f"Column {i+1} Name", value=col["name"], key=f"name_{i}")
         col["type"] = st.selectbox(f"Column {i+1} Type", ["String", "Integer", "Double", "Date"], key=f"type_{i}")
+        col["required"] = st.checkbox(f"Required", value=col.get("required", True), key=f"required_{i}")
         if col["type"] == "Date":
             col["format"] = st.text_input(f"Date Format (e.g., yyyy-MM-dd)", key=f"format_{i}")
 
@@ -45,7 +46,7 @@ elif menu == "Run Workflow":
                 df = pd.read_csv(uploaded_file)
             else:
                 df = pd.read_excel(uploaded_file)
-
+            
             st.write("📄 Uploaded Data", df.head())
 
             valid_df, invalid_df = apply_workflow(df, workflows[selected_workflow])
