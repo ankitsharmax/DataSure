@@ -67,7 +67,7 @@ def apply_workflow(df, schema_def):
         if valid:
             valid_rows.append(new_row)
         else:
-            new_row["__errors__"] = str(errors)
+            new_row["__errors__"] = json.dumps(errors)
             invalid_rows.append(new_row)
 
     valid_df = pd.DataFrame(valid_rows)
@@ -79,3 +79,19 @@ def apply_workflow(df, schema_def):
     invalid_df = invalid_df.rename(columns=rename_map)
 
     return valid_df, invalid_df
+
+def transform_column(value, dtype, fmt_in="", fmt_out="%Y-%m-%d"):
+    try:
+        if dtype == "Integer":
+            return int(value)
+        elif dtype == "Double":
+            return float(value)
+        elif dtype == "Date":
+            dt = pd.to_datetime(value, format=fmt_in, errors="coerce")
+            if pd.isna(dt):
+                return pd.NA
+            return dt.strftime(fmt_out)  # Always output in hardcoded format
+        else:
+            return str(value)
+    except Exception:
+        return pd.NA
