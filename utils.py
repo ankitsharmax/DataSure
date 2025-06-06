@@ -21,7 +21,7 @@ def load_workflows():
     return workflows
 
 def apply_workflow(df, schema_def):
-    spark = SparkSession.builder.master("local").appName("Validator").getOrCreate()
+    spark = SparkSession.builder.master("local").appName("DataSure").getOrCreate()
     required_columns = [col_def["name"] for col_def in schema_def]
     df = df[required_columns]
     sdf = spark.createDataFrame(df.astype(str))
@@ -73,5 +73,9 @@ def apply_workflow(df, schema_def):
     valid_df = pd.DataFrame(valid_rows)
     invalid_df = pd.DataFrame(invalid_rows)
 
-    return valid_df, invalid_df
+    # Rename columns from 'name' to 'db_name'
+    rename_map = {col_def["name"]: col_def["db_name"] for col_def in schema_def}
+    valid_df = valid_df.rename(columns=rename_map)
+    invalid_df = invalid_df.rename(columns=rename_map)
 
+    return valid_df, invalid_df
