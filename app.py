@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import load_workflows, save_workflow, apply_workflow
+from utils import load_workflows, save_workflow, apply_workflow, transform_column
 from charts import plot_validation_pie_chart, plot_error_counts_bar_chart
 import os
 import pandas as pd
@@ -10,7 +10,7 @@ st.title("DataSure: Data Workflow validator")
 
 # Sidebar Menu
 st.sidebar.title("📂 Workflow Options")
-menu = st.sidebar.selectbox("Choose an option", ["Create Workflow", "Run Workflow"])
+menu = st.sidebar.selectbox("Choose an option", ["Create Workflow", "Run Workflow"])   
 st.sidebar.markdown("Made with ❤️ by Ankit")
 
 if menu == "Create Workflow":
@@ -30,7 +30,7 @@ if menu == "Create Workflow":
         col["db_name"] = st.text_input(f"Column {i+1} DB Name", value=col["name"], key=f"db_name_{i}")
         col["required"] = st.checkbox(f"Required", value=col.get("required", True), key=f"required_{i}")
         if col["type"] == "Date":
-            col["format"] = st.text_input(f"Date Format (e.g., yyyy-MM-dd)", key=f"format_{i}")
+            col["format"] = st.text_input(f"Date Format (e.g., yyyy-MM-dd)", value="%Y-%m-%d", key=f"format_{i}")
 
     if st.button("Save Workflow"):
         save_workflow(workflow_name, st.session_state.columns)
@@ -78,4 +78,70 @@ elif menu == "Run Workflow":
             plot_validation_pie_chart(valid_count, invalid_count, "📊 Data Validation Summary")
             plot_error_counts_bar_chart(invalid_df)
 
+            schema = workflows[selected_workflow]
 
+            # Transform each column based on the schema
+            for col_def in schema:
+                col_name = col_def["db_name"]
+                dtype = col_def["type"]
+                fmt_in = col_def.get("format", "")  # dynamic input format
+
+                if col_name in combined_df.columns:
+                    combined_df[col_name] = combined_df[col_name].apply(lambda v: transform_column(v, dtype, fmt_in))
+                else:
+                    st.warning(f"Column '{col_name}' not found in uploaded data.")
+
+
+            st.write("🔄 Transformed Data", combined_df.head())
+
+            transformed_data = combined_df.to_csv(index=False)
+            st.download_button(
+                label="Download Transformed Data as CSV",
+                data=transformed_data,
+                file_name=f"transformed_{selected_workflow}.csv",
+                mime="text/csv"
+            )
+
+elif menu == "Transform Data":
+    st.header("🛠️ Data Transformation")
+
+    workflows = load_workflows()
+    workflow_names = list(workflows.keys())
+
+    if not workflow_names:
+        st.warning("No workflows available. Please create one first.")
+    else:
+        selected_workflow = st.selectbox("Select Workflow", workflow_names)
+        uploaded_file = st.file_uploader("Upload CSV/Excel file to transform", type=["csv", "xlsx"])
+
+        if uploaded_file and selected_workflow:
+            if uploaded_file.name.endswith(".csv"):
+                df = pd.read_csv(uploaded_file)
+            else:
+                df = pd.read_excel(uploaded_file)
+
+            st.write("📄 Original Data", df.head())
+
+            schema = workflows[selected_workflow]
+
+            # Transform each column based on the schema
+            for col_def in schema:
+                col_name = col_def["db_name"]
+                dtype = col_def["type"]
+                fmt_in = col_def.get("format", "")  # dynamic input format
+
+                if col_name in df.columns:
+                    df[col_name] = df[col_name].apply(lambda v: transform_column(v, dtype, fmt_in))
+                else:
+                    st.warning(f"Column '{col_name}' not found in uploaded data.")
+
+
+            st.write("🔄 Transformed Data", df.head())
+
+            csv_data = df.to_csv(index=False)
+            st.download_button(
+                label="Download Transformed Data as CSV",
+                data=csv_data,
+                file_name=f"transformed_{selected_workflow}.csv",
+                mime="text/csv"
+            )
