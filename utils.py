@@ -4,6 +4,8 @@ import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date
 from pyspark.sql.types import *
+from datetime import datetime
+import streamlit as st
 
 WORKFLOW_DIR = "workflows"
 
@@ -95,3 +97,23 @@ def transform_column(value, dtype, fmt_in="", fmt_out="%Y-%m-%d"):
             return str(value)
     except Exception:
         return pd.NA
+    
+def download_dataframe(df: pd.DataFrame, label: str, prefix: str):
+    """
+    Display a Streamlit download button to download a DataFrame as CSV with a timestamped filename.
+
+    Args:
+        df (pd.DataFrame): DataFrame to download
+        label (str): Label for the download button
+        prefix (str): Filename prefix (e.g., 'valid', 'invalid', 'transformed')
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{prefix}_{timestamp}.csv"
+    csv = df.to_csv(index=False)
+
+    st.download_button(
+        label=label,
+        data=csv,
+        file_name=filename,
+        mime="text/csv"
+    )
