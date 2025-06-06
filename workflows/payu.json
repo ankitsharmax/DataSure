@@ -1,0 +1,143 @@
+[
+    {
+      "name": "AddedOn",
+      "type": "Date",
+      "db_name": "createddate",
+      "format": "%d-%m-%Y %H:%M",
+      "required": true
+    },
+    {
+      "name": "Amount",
+      "type": "Double",
+      "db_name": "amount",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Requested Action",
+      "type": "String",
+      "db_name": "requestedaction",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Status",
+      "type": "String",
+      "db_name": "status",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Bank Name",
+      "type": "String",
+      "db_name": "bankname",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Request ID",
+      "type": "String",
+      "db_name": "requestid",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Requested Amount",
+      "type": "Double",
+      "db_name": "requestedamount",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Discount",
+      "type": "Double",
+      "db_name": "discount",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Additional Charges",
+      "type": "Double",
+      "db_name": "additionalcharges",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Merchant Txn ID",
+      "type": "String",
+      "db_name": "transactionid",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Payment Gateway",
+      "type": "String",
+      "db_name": "paymentgateway",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Payment Type",
+      "type": "String",
+      "db_name": "paymenttype",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Net Amount",
+      "type": "Double",
+      "db_name": "netamount",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Additional Service Fee",
+      "type": "Double",
+      "db_name": "servicefee",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Additional Service Tax",
+      "type": "Double",
+      "db_name": "servicetax",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Settlement Date",
+      "type": "Date",
+      "db_name": "settlementdate",
+      "format": "%d-%m-%Y %H:%M",
+      "required": true
+    },
+    {
+      "name": "Merchant UTR",
+      "type": "String",
+      "db_name": "settlementutr",
+      "format": "",
+      "required": true
+    },
+    {
+      "name": "Issuing Bank",
+      "type": "String",
+      "db_name": "issuingbank",
+      "format": "",
+      "required": false
+    },
+    {
+      "name": "Payment Source",
+      "type": "String",
+      "db_name": "paymentsource",
+      "format": "",
+      "required": true
+    },
+    {
+        "name": "PayU ID",
+        "type": "String",
+        "db_name": "payuid",
+        "format": "",
+        "required": true
+      }
+  ]
+  

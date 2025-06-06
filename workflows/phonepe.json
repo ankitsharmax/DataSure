@@ -1,0 +1,23 @@
+[
+  {
+    "name": "transaction_date",
+    "type": "Date",
+    "db_name": "payment_date",
+    "format": "%Y-%m-%d",
+    "required": true
+  },
+  {
+    "name": "amount",
+    "type": "Double",
+    "db_name": "amount",
+    "format": "",
+    "required": true
+  },
+  {
+    "name": "phone_number",
+    "type": "String",
+    "db_name": "phone_number",
+    "format": "",
+    "required": true
+  }
+]
