@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import load_workflows, save_workflow, apply_workflow, transform_column
+from utils import load_workflows, save_workflow, apply_workflow, transform_column, download_dataframe
 from charts import plot_validation_pie_chart, plot_error_counts_bar_chart
 import os
 import pandas as pd
@@ -62,16 +62,19 @@ elif menu == "Run Workflow":
 
             st.subheader("Invalid Records")
             st.write(invalid_df.head(10))
-
-            st.download_button("Download Valid Records", valid_df.to_csv(index=False), f"valid_{selected_workflow}.csv", "text/csv")
-            st.download_button("Download Invalid Records", invalid_df.to_csv(index=False), f"invalid_{selected_workflow}.csv", "text/csv")
+            
+            # Valid and Invalid Data downloads
+            download_dataframe(valid_df, "Download Valid Records", f"valid_{selected_workflow}")
+            download_dataframe(invalid_df, "Download Invalid Records", f"invalid_{selected_workflow}")
 
             updated_valid_df = valid_df
             updated_valid_df["__errors__"] = 'valid_data'
             combined_df = pd.concat([updated_valid_df, invalid_df], ignore_index=True)
             st.write("Combined DataFrame (Valid + Invalid)")
             st.write(combined_df.head(10))
-            st.download_button("Download Overall Records", combined_df.to_csv(index=False), f"overall_{selected_workflow}.csv", "text/csv")
+            
+            # Valid + Invalid Combined Data downloads
+            download_dataframe(combined_df, "Download Overall Records", f"combined_{selected_workflow}")
 
             valid_count = valid_df.shape[0]
             invalid_count = invalid_df.shape[0]
@@ -81,67 +84,18 @@ elif menu == "Run Workflow":
             schema = workflows[selected_workflow]
 
             # Transform each column based on the schema
+            transformed_data = combined_df.copy(deep=True)
             for col_def in schema:
                 col_name = col_def["db_name"]
                 dtype = col_def["type"]
                 fmt_in = col_def.get("format", "")  # dynamic input format
 
-                if col_name in combined_df.columns:
-                    combined_df[col_name] = combined_df[col_name].apply(lambda v: transform_column(v, dtype, fmt_in))
+                if col_name in transformed_data.columns:
+                    transformed_data[col_name] = transformed_data[col_name].apply(lambda v: transform_column(v, dtype, fmt_in))
                 else:
                     st.warning(f"Column '{col_name}' not found in uploaded data.")
 
 
-            st.write("🔄 Transformed Data", combined_df.head())
-
-            transformed_data = combined_df.to_csv(index=False)
-            st.download_button(
-                label="Download Transformed Data as CSV",
-                data=transformed_data,
-                file_name=f"transformed_{selected_workflow}.csv",
-                mime="text/csv"
-            )
-
-elif menu == "Transform Data":
-    st.header("🛠️ Data Transformation")
-
-    workflows = load_workflows()
-    workflow_names = list(workflows.keys())
-
-    if not workflow_names:
-        st.warning("No workflows available. Please create one first.")
-    else:
-        selected_workflow = st.selectbox("Select Workflow", workflow_names)
-        uploaded_file = st.file_uploader("Upload CSV/Excel file to transform", type=["csv", "xlsx"])
-
-        if uploaded_file and selected_workflow:
-            if uploaded_file.name.endswith(".csv"):
-                df = pd.read_csv(uploaded_file)
-            else:
-                df = pd.read_excel(uploaded_file)
-
-            st.write("📄 Original Data", df.head())
-
-            schema = workflows[selected_workflow]
-
-            # Transform each column based on the schema
-            for col_def in schema:
-                col_name = col_def["db_name"]
-                dtype = col_def["type"]
-                fmt_in = col_def.get("format", "")  # dynamic input format
-
-                if col_name in df.columns:
-                    df[col_name] = df[col_name].apply(lambda v: transform_column(v, dtype, fmt_in))
-                else:
-                    st.warning(f"Column '{col_name}' not found in uploaded data.")
-
-
-            st.write("🔄 Transformed Data", df.head())
-
-            csv_data = df.to_csv(index=False)
-            st.download_button(
-                label="Download Transformed Data as CSV",
-                data=csv_data,
-                file_name=f"transformed_{selected_workflow}.csv",
-                mime="text/csv"
-            )
+            st.write("🔄 Transformed Data", transformed_data.head())
+            # Transformed Data downloads
+            download_dataframe(transformed_data, "Download Transformed Data as CSV", f"transformed_{selected_workflow}")
